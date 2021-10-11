@@ -7,9 +7,10 @@ public class Message {
     private Address source;
     private Address destination;
 
+    private String function;
+
     private String uuid;
     private String comment;
-
 
     public Message(Address source, Address destination) {
         this.source = source;
@@ -22,9 +23,30 @@ public class Message {
         this.uuid = generateUUID();
     }
 
+
     String generateUUID() {
         UUID uuid = UUID.randomUUID();
         return uuid.toString();
+    }
+
+
+    /**
+     * Returns message as a raw string.
+     *
+     * @return message in a string format
+     */
+    public String toString() {
+
+        return null;
+    }
+
+    /**
+     * Returns a message as a pretty printed string
+     *
+     * @return message in a pretty print string format
+     */
+    public String toPrettyString() {
+        return null;
     }
 
 

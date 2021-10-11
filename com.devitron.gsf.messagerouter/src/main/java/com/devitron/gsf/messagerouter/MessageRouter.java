@@ -17,16 +17,7 @@ public class MessageRouter {
     }
 
 
-    /**
-     * Given a service address, it will register the service within
-     * MessageRouter and create a unique queue name.
-     *
-     * @param address Address of the service
-     * @return unique queue name
-     */
-    public String registerService(Address address) {
-        return null;
-    }
+
 
     /**
      *  Main loop

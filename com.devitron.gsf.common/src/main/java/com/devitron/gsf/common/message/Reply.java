@@ -15,8 +15,8 @@ public class Reply extends Message {
     }
 
     void setFromMessage(Message message) {
-        setSource(message.getDestination());
-        setDestination(message.getSource());
+        setSource(new Address(message.getDestination().getName(), message.getDestination().getVersion()));
+        setDestination(new Address(message.getSource().getName(), message.getSource().getVersion()));
         setUuid(message.getUuid());
         setComment(message.getComment());
     }

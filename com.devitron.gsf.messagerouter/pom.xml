@@ -35,6 +35,11 @@
             <artifactId>com.devitron.gsf.common</artifactId>
             <version>0.1</version>
         </dependency>
+        <dependency>
+            <groupId>com.devitron.gsf</groupId>
+            <artifactId>com.devitron.gsf.utilities</artifactId>
+            <version>0.1</version>
+        </dependency>
     </dependencies>
 
     <properties>
