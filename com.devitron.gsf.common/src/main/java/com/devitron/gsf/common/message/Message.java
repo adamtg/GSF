@@ -4,29 +4,28 @@ import java.util.UUID;
 
 public class Message {
 
-    private Address source;
-    private Address destination;
-
-    private String function;
-
-    private String uuid;
-    private String comment;
+    Header header = new Header();
 
     public Message(Address source, Address destination) {
-        this.source = source;
-        this.destination = destination;
-        this.uuid = generateUUID();
+        this.header.setSource(source);
+        this.header.setDestination(destination);
+        this.header.setUuid(generateUUID());
     }
 
 
     public Message()  {
-        this.uuid = generateUUID();
+        this.header.setUuid(generateUUID());
     }
 
 
     String generateUUID() {
         UUID uuid = UUID.randomUUID();
         return uuid.toString();
+    }
+
+
+    public Header getHeader() {
+        return header;
     }
 
 
@@ -50,35 +49,50 @@ public class Message {
     }
 
 
-    public Address getSource() {
-        return source;
+
+    public static class Header {
+        private Address source;
+        private Address destination;
+
+        private String function;
+
+        private String uuid;
+        private String comment;
+
+
+        public Address getSource() {
+            return source;
+        }
+
+        public void setSource(Address source) {
+            this.source = source;
+        }
+
+        public Address getDestination() {
+            return destination;
+        }
+
+        public void setDestination(Address destination) {
+            this.destination = destination;
+        }
+
+        public String getUuid() {
+            return uuid;
+        }
+
+        public void setUuid(String uuid) {
+            this.uuid = uuid;
+        }
+
+        public String getComment() {
+            return comment;
+        }
+
+        public void setComment(String comment) {
+            this.comment = comment;
+        }
+
+
     }
 
-    public void setSource(Address source) {
-        this.source = source;
-    }
-
-    public Address getDestination() {
-        return destination;
-    }
-
-    public void setDestination(Address destination) {
-        this.destination = destination;
-    }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
 }

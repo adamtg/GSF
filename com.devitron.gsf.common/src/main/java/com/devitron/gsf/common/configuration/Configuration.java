@@ -72,7 +72,29 @@ public class Configuration {
 
 
     public class Global {
+        private String messageBrokerName;
+        private int messageBrokerPort;
+
         private String registerationQueue;
+
+
+
+        public String getMessageBrokerName() {
+            return messageBrokerName;
+        }
+
+        public void setMessageBrokerName(String messageBrokerName) {
+            this.messageBrokerName = messageBrokerName;
+        }
+
+        public int getMessageBrokerPort() {
+            return messageBrokerPort;
+        }
+
+        public void setMessageBrokerPort(int messageBrokerPort) {
+            this.messageBrokerPort = messageBrokerPort;
+        }
+
 
         public String getRegisterationQueue() {
             return registerationQueue;

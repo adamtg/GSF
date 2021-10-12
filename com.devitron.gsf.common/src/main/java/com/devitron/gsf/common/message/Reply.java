@@ -3,7 +3,7 @@ package com.devitron.gsf.common.message;
 public class Reply extends Message {
 
     public Reply() {
-        setUuid(generateUUID());
+         header.setUuid(generateUUID());
     }
 
     public Reply(Address source, Address destination) {
@@ -15,10 +15,10 @@ public class Reply extends Message {
     }
 
     void setFromMessage(Message message) {
-        setSource(new Address(message.getDestination().getName(), message.getDestination().getVersion()));
-        setDestination(new Address(message.getSource().getName(), message.getSource().getVersion()));
-        setUuid(message.getUuid());
-        setComment(message.getComment());
+        header.setSource(new Address(message.getHeader().getDestination().getName(), message.getHeader().getDestination().getVersion()));
+        header.setDestination(new Address(message.getHeader().getSource().getName(), message.getHeader().getSource().getVersion()));
+        header.setUuid(message.getHeader().getUuid());
+        header.setComment(message.getHeader().getComment());
     }
 
 
