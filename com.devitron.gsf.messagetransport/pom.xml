@@ -22,6 +22,26 @@
             <artifactId>com.devitron.gsf.common</artifactId>
             <version>0.1</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.devitron.gsf</groupId>
+            <artifactId>com.devitron.gsf.messagerouter</artifactId>
+            <version>0.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.rabbitmq</groupId>
+            <artifactId>amqp-client</artifactId>
+            <version>4.10.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.devitron.gsf</groupId>
+            <artifactId>GSF</artifactId>
+            <version>0.1</version>
+            <scope>compile</scope>
+        </dependency>
+
     </dependencies>
 
 </project>

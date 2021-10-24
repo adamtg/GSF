@@ -11,5 +11,13 @@ public class Request extends Message {
         super();
     }
 
+    public void setFunction(String function) {
+        getHeader().setFunction(function);
+    }
+
+    public String getFunction() {
+        return getHeader().getFunction();
+    }
+
 
 }

@@ -9,7 +9,7 @@ public class Message {
     public Message(Address source, Address destination) {
         this.header.setSource(source);
         this.header.setDestination(destination);
-        this.header.setUuid(generateUUID());
+        this.header.setUuid(Utilities.generateUUID());
     }
 
 
@@ -17,20 +17,13 @@ public class Message {
         this.header.setUuid(generateUUID());
     }
 
-
-    String generateUUID() {
-        UUID uuid = UUID.randomUUID();
-        return uuid.toString();
-    }
-
-
     public Header getHeader() {
         return header;
     }
 
 
     /**
-     * Returns message as a raw string.
+     * Returns message as a raw JSON string.
      *
      * @return message in a string format
      */
@@ -40,7 +33,7 @@ public class Message {
     }
 
     /**
-     * Returns a message as a pretty printed string
+     * Returns a message as a pretty printed JSON string
      *
      * @return message in a pretty print string format
      */
@@ -50,49 +43,19 @@ public class Message {
 
 
 
-    public static class Header {
-        private Address source;
-        private Address destination;
+    /**
+     * Given a message as a string, create a message based object
+     * of type classType
+     *
+     * @param messageString message as a string
+     * @param classType type of class to create
+     * @return
+     */
+    public static Message createMessage(String messageString, Class classType) {
 
-        private String function;
-
-        private String uuid;
-        private String comment;
-
-
-        public Address getSource() {
-            return source;
-        }
-
-        public void setSource(Address source) {
-            this.source = source;
-        }
-
-        public Address getDestination() {
-            return destination;
-        }
-
-        public void setDestination(Address destination) {
-            this.destination = destination;
-        }
-
-        public String getUuid() {
-            return uuid;
-        }
-
-        public void setUuid(String uuid) {
-            this.uuid = uuid;
-        }
-
-        public String getComment() {
-            return comment;
-        }
-
-        public void setComment(String comment) {
-            this.comment = comment;
-        }
-
+        return null;
 
     }
+
 
 }

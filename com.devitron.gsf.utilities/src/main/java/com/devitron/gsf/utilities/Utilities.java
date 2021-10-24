@@ -1,5 +1,7 @@
 package com.devitron.gsf.utilities;
 
+import java.util.UUID;
+
 public class Utilities {
 
     public static int compareVersions(String a, String b) {
@@ -35,6 +37,11 @@ public class Utilities {
             }
 
         return r;
+    }
+
+    static String generateUUID() {
+        UUID uuid = UUID.randomUUID();
+        return uuid.toString();
     }
 
 }

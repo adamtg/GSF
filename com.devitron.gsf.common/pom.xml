@@ -10,6 +10,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>com.devitron.gsf.common</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>com.devitron.gsf</groupId>
+            <artifactId>com.devitron.gsf.utilities</artifactId>
+            <version>0.1</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
 
     <properties>
         <maven.compiler.source>16</maven.compiler.source>
