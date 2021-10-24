@@ -1,6 +1,24 @@
 package com.devitron.gsf.common.configuration;
 
+import com.devitron.gsf.common.configuration.exceptions.ConfigFileNotFoundException;
+
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import com.devitron.gsf.common.configuration.exceptions.ConfigFileParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class Configuration {
+
+    static private String GSF_HOME_VAR_NAME = "GSF_HOME";
+    static private String DEFAULT_GSF_HOMR = "/etc/gsf";
+    static private String GLOBAL_CONFIG_NAME = "global.conf";
 
 
     private Global global;
@@ -42,41 +60,143 @@ public class Configuration {
     }
 
     /**
-     * Returns a configuration object.  It first loads the global conf, then
-     * it loads the configuration, using the field service as the hint to the
-     * file name.  It first searches "${GSF_HOME}"/config for the filename.
-     * If that does not exist, it searches /etc/gsf/config
+     * Figures out the fullpath of the filename
      *
-     * @return a configuration object
+     * @param configname configuration file name
+     * @return the fullpath to the configuration file
+     * @throws ConfigFileNotFoundException
      */
-    public static Configuration loadConfiguration() {
-        return null;
+    private static String getFilename(String configname) throws ConfigFileNotFoundException {
+
+        String fullFilepath = null;
+
+        String gsfHome = System.getenv(GSF_HOME_VAR_NAME);
+
+        if (gsfHome != null) {
+            fullFilepath = gsfHome + "/config/" + configname;
+
+            Path path = Paths.get(fullFilepath);
+
+            if (Files.notExists(path)) {
+
+                fullFilepath = DEFAULT_GSF_HOMR + "/config/" + configname;
+                path = Paths.get(fullFilepath);
+                if (Files.notExists(path)) {
+                    throw new ConfigFileNotFoundException(configname);
+                }
+            }
+        }
+
+
+        return fullFilepath;
+    }
+
+    /**
+     * Loads the global configuration file
+     *
+     * @return Global object
+     * @throws ConfigFileNotFoundException
+     * @throws ConfigFileParseException
+     */
+    private static Global loadGlobal() throws ConfigFileNotFoundException, ConfigFileParseException {
+
+        String filename = getFilename(GLOBAL_CONFIG_NAME);
+        String rawJson = null;
+
+        try {
+            Path path = Path.of(filename);
+            rawJson = Files.readString(path);
+        } catch (IOException e) {
+            throw new ConfigFileNotFoundException(e);
+        }
+
+
+        Global global = null;
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            global = objectMapper.readValue(rawJson, Global.class);
+        } catch (JsonProcessingException e) {
+            throw new ConfigFileParseException(e);
+        }
+
+        return global;
+    }
+
+
+    /**
+     * Merge the values from the global config file into the
+     * service's global config.  The service's values will
+     * always override the values from the global config.
+     * @param globalGlobal global from the global config
+     * @param serviceGlobal global from the service's config
+     */
+    private static void mergeGlobal(Global globalGlobal, Global serviceGlobal) {
+
+        if (serviceGlobal.getMessageBrokerName() == null) {
+            serviceGlobal.setMessageBrokerName(globalGlobal.getMessageBrokerName());
+        }
+
+        if (serviceGlobal.getMessageBrokerPort() == null) {
+            serviceGlobal.setMessageBrokerPort(globalGlobal.getMessageBrokerPort());
+        }
+
+
+        if (serviceGlobal.getRegistrationQueue() == null) {
+            serviceGlobal.setRegistrationQueue(globalGlobal.getRegistrationQueue());
+        }
+
+
     }
 
     /**
      * Returns a configuration object.  It first loads the global conf, then
      * it loads the configuration, using the field service and configleName as the hint to the
-     * file name.  It finds the files by:
-     * 1. if configFilename starts with a "/", it treats it as an absolute filename
-     * 2. if configFilename ends with ".conf", it uses that filename
-     * 3. It first loads the global configuration.  It searches "${GSF_HOME}"/config first, then /etc/gsf/config
-     * 4. It uses configFilename and the field serviceName as hints to the location of the service config filename.
+     * file name.  If configFilename starts with a "/", it treats it as an absolute filename.  It
+     * first loads the global configuration.  It searches "${GSF_HOME}"/config first, then /etc/gsf/config
      * if configFilename is not absolute, it looks in the same directories as the global config
      *
-     * @param configFilename hint to what the configuration filename is
+     * @param configFilename the configuration filename
+     * @param configClass    the configuration class
      * @return
      */
-    public static Configuration loadConfiguration(String configFilename) {
-        return null;
+    public static Configuration loadConfiguration(String configFilename, Class configClass) throws ConfigFileNotFoundException, ConfigFileParseException, ConfigFileParseException {
+
+        Configuration config = null;
+        String rawJson = null;
+
+        Global global = loadGlobal();
+        String filename = null;
+
+        if (configFilename.startsWith("/")) {
+            filename = configFilename;
+        } else {
+            filename = getFilename(configFilename);
+        }
+        try {
+            Path path = Path.of(filename);
+            rawJson = Files.readString(path);
+        } catch (IOException e) {
+            throw new ConfigFileNotFoundException(e);
+        }
+
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            config = (Configuration) objectMapper.readValue(rawJson, configClass);
+        } catch (JsonProcessingException e) {
+            throw new ConfigFileParseException(e);
+        }
+
+        mergeGlobal(global, config.getGlobal());
+
+        return config;
     }
 
 
-    public class Global {
+    static public class Global {
         private String messageBrokerName;
-        private int messageBrokerPort;
+        private Integer messageBrokerPort;
 
-        private String registerationQueue;
-
+        private String registrationQueue;
 
 
         public String getMessageBrokerName() {
@@ -87,21 +207,21 @@ public class Configuration {
             this.messageBrokerName = messageBrokerName;
         }
 
-        public int getMessageBrokerPort() {
+        public Integer getMessageBrokerPort() {
             return messageBrokerPort;
         }
 
-        public void setMessageBrokerPort(int messageBrokerPort) {
+        public void setMessageBrokerPort(Integer messageBrokerPort) {
             this.messageBrokerPort = messageBrokerPort;
         }
 
 
-        public String getRegisterationQueue() {
-            return registerationQueue;
+        public String getRegistrationQueue() {
+            return registrationQueue;
         }
 
-        public void setRegisterationQueue(String registerationQueue) {
-            this.registerationQueue = registerationQueue;
+        public void setRegistrationQueue(String registerationQueue) {
+            this.registrationQueue = registerationQueue;
         }
     }
 
