@@ -1,9 +1,11 @@
 package com.devitron.gsf.common.message;
 
+import com.devitron.gsf.utilities.Utilities;
+
 public class Reply extends Message {
 
     public Reply() {
-         header.setUuid(generateUUID());
+         header.setUuid(Utilities.generateUUID());
     }
 
     public Reply(Address source, Address destination) {

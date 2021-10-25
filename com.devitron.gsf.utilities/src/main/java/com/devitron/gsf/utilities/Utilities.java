@@ -39,7 +39,7 @@ public class Utilities {
         return r;
     }
 
-    static String generateUUID() {
+    static public String generateUUID() {
         UUID uuid = UUID.randomUUID();
         return uuid.toString();
     }

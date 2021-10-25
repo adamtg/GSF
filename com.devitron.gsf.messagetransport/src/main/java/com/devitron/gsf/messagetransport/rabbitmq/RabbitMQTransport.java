@@ -57,7 +57,7 @@ public class RabbitMQTransport implements MessageTransport {
 
         // create and send the request
         Messages.RegisterServiceRequest request = new Messages.RegisterServiceRequest(address);
-        Channel regChannel = connection.createChannel()) {
+        Channel regChannel = connection.createChannel();
         channel.queueDeclare(regQueueName, false, false, false, null);
         channel.basicPublish("", regQueueName, null, request.toString().getBytes());
 

@@ -11,8 +11,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import com.devitron.gsf.common.configuration.exceptions.ConfigFileParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.devitron.gsf.utilities.Json;
+import com.devitron.gsf.utilities.exceptions.UtilitiesJsonParseException;
 
 public class Configuration {
 
@@ -113,9 +113,8 @@ public class Configuration {
 
         Global global = null;
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            global = objectMapper.readValue(rawJson, Global.class);
-        } catch (JsonProcessingException e) {
+            global = (Global)Json.jsonToObject(rawJson, Global.class);
+        } catch (UtilitiesJsonParseException e) {
             throw new ConfigFileParseException(e);
         }
 
@@ -180,9 +179,8 @@ public class Configuration {
         }
 
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            config = (Configuration) objectMapper.readValue(rawJson, configClass);
-        } catch (JsonProcessingException e) {
+            config = (Configuration)Json.jsonToObject(rawJson, configClass);
+        } catch (UtilitiesJsonParseException e) {
             throw new ConfigFileParseException(e);
         }
 

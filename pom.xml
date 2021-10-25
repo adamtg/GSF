@@ -15,18 +15,23 @@
         <module>com.devitron.gsf.messagerouter</module>
         <module>com.devitron.gsf.messagetransport</module>
     </modules>
-    <dependencies>
-        <dependency>
-            <groupId>com.devitron.gsf</groupId>
-            <artifactId>com.devitron.gsf.common</artifactId>
-            <version>0.1</version>
-            <scope>compile</scope>
-        </dependency>
-    </dependencies>
+
 
     <properties>
         <maven.compiler.source>16</maven.compiler.source>
         <maven.compiler.target>16</maven.compiler.target>
     </properties>
+
+    <build>
+        <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.0</version>
+            </plugin>
+
+        </plugins>
+    </build>
 
 </project>

@@ -1,5 +1,7 @@
 package com.devitron.gsf.common.message;
 
+import com.devitron.gsf.utilities.Utilities;
+
 import java.util.UUID;
 
 public class Message {
@@ -14,7 +16,7 @@ public class Message {
 
 
     public Message()  {
-        this.header.setUuid(generateUUID());
+        this.header.setUuid(Utilities.generateUUID());
     }
 
     public Header getHeader() {
