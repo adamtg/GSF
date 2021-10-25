@@ -34,6 +34,12 @@
             <artifactId>com.devitron.gsf.common</artifactId>
             <version>0.1</version>
         </dependency>
+        <dependency>
+            <groupId>com.devitron.gsf</groupId>
+            <artifactId>com.devitron.gsf.messagetransport</artifactId>
+            <version>0.1</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
 

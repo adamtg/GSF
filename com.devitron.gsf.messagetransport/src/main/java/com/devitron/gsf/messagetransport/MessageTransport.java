@@ -22,15 +22,6 @@ public interface MessageTransport {
     public void init(String hostname, int port, String username, String password)  throws IOException, TimeoutException;
 
     /**
-     * Using address, it will send a message to Message Router
-     * to get queue name
-     *
-     * @param address address of service
-     * @return name of queue for service
-     */
-    public String register(Address address) throws IOException;
-
-    /**
      * Set queue name to name.  This is the name that is
      * retrieved from register(Address address).
      *
@@ -47,6 +38,17 @@ public interface MessageTransport {
      */
     public boolean send(Message message);
 
+
+    /**
+     * Sends a message to the queue queueName instead of the
+     * default queue that was configured with setupQueue
+     *
+     * @param message message to send
+     * @param queueName name of alternative queue
+     * @return if send was successful or not
+     */
+    public boolean send(Message message, String queueName);
+
     /**
      * Sends message, message represented as a string
      *
@@ -54,6 +56,17 @@ public interface MessageTransport {
      * @return if send was successful or not
      */
     public boolean send(String message);
+
+    /**
+     * Sends a message, represented by a string, to the queue
+     * queueName instead of the default queue that was
+     * configured with setupQueue.
+     *
+     * @param message String representation of a message
+     * @param queueName name of alternative queue
+     * @return if send was successful or not
+     */
+    public boolean send(String message, String queueName);
 
 
     /**

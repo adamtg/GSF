@@ -1,16 +1,57 @@
 package com.devitron.gsf.service;
 
+import com.devitron.gsf.common.configuration.Configuration;
 import com.devitron.gsf.common.message.Address;
 import com.devitron.gsf.common.message.Message;
+import com.devitron.gsf.messagetransport.MessageTransport;
+import com.devitron.gsf.messagetransport.MessageTransportFactory;
 import com.devitron.gsf.service.exceptions.MessageReplyTimeoutException;
 
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 
 public abstract class Service {
 
+    Configuration config;
+    MessageTransport mt = null;
 
+    private String queueName = null;
 
     abstract public Address getAddress();
+    abstract public String getServiceName();
+
+    /**
+     * Sets up the connection to the message broker, including
+     * resgistering with the MessageRouter
+     * 
+     * @throws IOException
+     * @throws TimeoutException
+     */
+    public void setupMessageQueue() throws IOException, TimeoutException {
+
+        mt = MessageTransportFactory.getMessageTransport();
+        mt.init(config.getGlobal().getMessageBrokerAddress(), config.getGlobal().getMessageBrokerPort(),
+                config.getGlobal().getMessageBrokerUsername(), config.getGlobal().getMessageBrokerPassword());
+
+        boolean shutdown = register();
+
+        if (shutdown) {
+            // do the shutdown process
+
+        }
+
+        mt.setupQueue(queueName);
+
+    }
+
+    public boolean register() {
+
+        boolean shutdown = false;
+
+
+        return shutdown;
+    }
 
 
     /**

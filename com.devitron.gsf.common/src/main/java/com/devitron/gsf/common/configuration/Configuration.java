@@ -2,9 +2,6 @@ package com.devitron.gsf.common.configuration;
 
 import com.devitron.gsf.common.configuration.exceptions.ConfigFileNotFoundException;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -131,8 +128,8 @@ public class Configuration {
      */
     private static void mergeGlobal(Global globalGlobal, Global serviceGlobal) {
 
-        if (serviceGlobal.getMessageBrokerName() == null) {
-            serviceGlobal.setMessageBrokerName(globalGlobal.getMessageBrokerName());
+        if (serviceGlobal.getMessageBrokerAddress() == null) {
+            serviceGlobal.setMessageBrokerAddress(globalGlobal.getMessageBrokerAddress());
         }
 
         if (serviceGlobal.getMessageBrokerPort() == null) {
@@ -191,18 +188,21 @@ public class Configuration {
 
 
     static public class Global {
-        private String messageBrokerName;
+        private String messageBrokerAddress;
         private Integer messageBrokerPort;
+
+        private String messageBrokerUsername;
+        private String messageBrokerPassword;
 
         private String registrationQueue;
 
 
-        public String getMessageBrokerName() {
-            return messageBrokerName;
+        public String getMessageBrokerAddress() {
+            return messageBrokerAddress;
         }
 
-        public void setMessageBrokerName(String messageBrokerName) {
-            this.messageBrokerName = messageBrokerName;
+        public void setMessageBrokerAddress(String messageBrokerAddress) {
+            this.messageBrokerAddress = messageBrokerAddress;
         }
 
         public Integer getMessageBrokerPort() {
@@ -213,6 +213,21 @@ public class Configuration {
             this.messageBrokerPort = messageBrokerPort;
         }
 
+        public String getMessageBrokerUsername() {
+            return messageBrokerUsername;
+        }
+
+        public void setMessageBrokerUsername(String messageBrokerUsername) {
+            this.messageBrokerUsername = messageBrokerUsername;
+        }
+
+        public String getMessageBrokerPassword() {
+            return messageBrokerPassword;
+        }
+
+        public void setMessageBrokerPassword(String messageBrokerPassword) {
+            this.messageBrokerPassword = messageBrokerPassword;
+        }
 
         public String getRegistrationQueue() {
             return registrationQueue;

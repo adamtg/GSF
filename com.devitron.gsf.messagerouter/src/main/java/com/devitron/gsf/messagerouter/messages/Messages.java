@@ -15,10 +15,13 @@ public class Messages {
      */
     public static class RegisterServiceRequest extends Request {
 
-        public RegisterServiceRequest(Address source) {
+        public RegisterServiceRequest(Address destination) {
             super(destination);
-
         }
+
+        public String randomeString;
+        public Integer shutdownOnDup;
+        public Integer shutdownOnUnique;
 
 
     }
@@ -29,15 +32,8 @@ public class Messages {
             super(message);
         }
 
-        private String queueName;
+        public Boolean shutdown;
 
-        public String getQueueName() {
-            return queueName;
-        }
-
-        public void setQueueName(String queueName) {
-            this.queueName = queueName;
-        }
     }
 
 
