@@ -14,6 +14,11 @@ public class Message {
         this.header.setUuid(Utilities.generateUUID());
     }
 
+    public Message(Address destination) {
+        this.header.setDestination(destination);
+        this.header.setUuid(Utilities.generateUUID());
+    }
+
 
     public Message()  {
         this.header.setUuid(Utilities.generateUUID());

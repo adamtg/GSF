@@ -16,7 +16,7 @@ public class Messages {
     public static class RegisterServiceRequest extends Request {
 
         public RegisterServiceRequest(Address source) {
-            super(source, destination);
+            super(destination);
 
         }
 

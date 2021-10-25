@@ -61,10 +61,9 @@ public class RabbitMQTransport implements MessageTransport {
         channel.queueDeclare(regQueueName, false, false, false, null);
         channel.basicPublish("", regQueueName, null, request.toString().getBytes());
 
-        
 
 
-            return null;
+        return null;
     }
 
     @Override

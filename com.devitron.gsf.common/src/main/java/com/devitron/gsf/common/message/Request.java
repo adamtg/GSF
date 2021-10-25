@@ -6,6 +6,10 @@ public class Request extends Message {
         super(source, destination);
     }
 
+    public Request(Address destination) {
+        super(destination);
+    }
+
 
     public Request()  {
         super();
