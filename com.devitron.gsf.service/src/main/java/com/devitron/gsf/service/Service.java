@@ -7,7 +7,7 @@ import com.devitron.gsf.messagetransport.MessageTransport;
 import com.devitron.gsf.messagetransport.MessageTransportFactory;
 import com.devitron.gsf.messagetransport.exceptions.MessageTransportIOException;
 import com.devitron.gsf.messagetransport.exceptions.MessageTransportTimeoutException;
-import com.devitron.gsf.service.exceptions.MessageReplyTimeoutException;
+import com.devitron.gsf.service.exceptions.ServiceMessageReplyTimeoutException;
 import com.devitron.gsf.utilities.Json;
 import com.devitron.gsf.utilities.Utilities;
 import com.devitron.gsf.utilities.exceptions.UtilitiesJsonParseException;
@@ -26,14 +26,18 @@ public abstract class Service {
     abstract public Address getAddress();
     abstract public String getServiceName();
 
+
     /**
      * Sets up the connection to the message broker, including
-     * resgistering with the MessageRouter
+     * registering with the MessageRouter
      *
-     * @throws IOException
-     * @throws TimeoutException
+     * @return if service should shutdown
+     * @throws MessageTransportIOException
+     * @throws MessageTransportTimeoutException
+     * @throws UtilitiesJsonParseException
+     * @throws ServiceMessageReplyTimeoutException
      */
-    public void setupMessageQueue() throws MessageTransportIOException, MessageTransportTimeoutException {
+    public boolean setupMessaging() throws MessageTransportIOException, MessageTransportTimeoutException, UtilitiesJsonParseException, ServiceMessageReplyTimeoutException {
 
         mt = MessageTransportFactory.getMessageTransport();
         mt.init(config.getGlobal().getMessageBrokerAddress(), config.getGlobal().getMessageBrokerPort(),
@@ -42,14 +46,20 @@ public abstract class Service {
         boolean shutdown = register();
 
         if (shutdown) {
-            // do the shutdown process
-
+            shutdownMessageBrokerConnection();
         }
 
-
+        return shutdown;
     }
 
-    public boolean register() {
+    /**
+     * Registers service with MessageRouter
+     *
+     * @return if service should shutdown
+     * @throws UtilitiesJsonParseException
+     * @throws ServiceMessageReplyTimeoutException
+     */
+    private boolean register() throws UtilitiesJsonParseException, ServiceMessageReplyTimeoutException {
 
         boolean shutdown = false;
 
@@ -65,7 +75,7 @@ public abstract class Service {
 
         mt.setupQueue(queueName);
 
-        try {
+
 
             String jsonReply = send(regRequest, 0);
 
@@ -75,10 +85,6 @@ public abstract class Service {
 
             shutdown = regReply.shutdown;
 
-        } catch (UtilitiesJsonParseException | MessageReplyTimeoutException e) {
-            e.printStackTrace();
-            shutdown = false;
-        }
 
         return shutdown;
     }
@@ -125,7 +131,7 @@ public abstract class Service {
      * @param timeout How long to wait for reply in microseconds
      * @return Reply message
      */
-    public String send(Message message, int timeout) throws MessageReplyTimeoutException {
+    public String send(Message message, int timeout) throws ServiceMessageReplyTimeoutException {
         message.getHeader().setSource(getAddress());
 
         return null;
@@ -138,6 +144,17 @@ public abstract class Service {
      */
     public Message receiveMessage() {
         return new Message();
+    }
+
+
+    /**
+     * Removes queue and shutdown message broker connection
+     */
+    public void shutdownMessageBrokerConnection() {
+
+        // remove messaging queue
+        // close connection to messaging queue
+
     }
 
 
