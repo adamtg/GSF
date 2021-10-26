@@ -100,6 +100,8 @@ public abstract class Service {
      */
     public void send(Message message, Function<Message, Message> callback) {
         message.getHeader().setSource(getAddress());
+        message.getHeader().setCallback(true);
+
         String json = Json.objectToJson(message);
 
     }

@@ -14,6 +14,7 @@ public class Header {
     private String statusDescription;
 
     private boolean sync = false;
+    private boolean callback = false;
 
     public Address getSource() {
         return source;
@@ -77,5 +78,13 @@ public class Header {
 
     public void setSync(boolean sync) {
         this.sync = sync;
+    }
+
+    public boolean isCallback() {
+        return callback;
+    }
+
+    public void setCallback(boolean callback) {
+        this.callback = callback;
     }
 }
