@@ -133,6 +133,7 @@ public abstract class Service {
      */
     public String send(Message message, int timeout) throws ServiceMessageReplyTimeoutException {
         message.getHeader().setSource(getAddress());
+        message.getHeader().setSync(true);
 
         return null;
     }

@@ -13,6 +13,8 @@ public class Header {
     private int status;
     private String statusDescription;
 
+    private boolean sync = false;
+
     public Address getSource() {
         return source;
     }
@@ -69,5 +71,11 @@ public class Header {
         this.statusDescription = statusDescription;
     }
 
+    public boolean isSync() {
+        return sync;
+    }
 
+    public void setSync(boolean sync) {
+        this.sync = sync;
+    }
 }
