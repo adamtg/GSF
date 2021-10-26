@@ -53,26 +53,12 @@ public class RabbitMQTransport implements MessageTransport {
     }
 
     @Override
-    public String register(Address address) throws IOException {
-
-        // create and send the request
-        Messages.RegisterServiceRequest request = new Messages.RegisterServiceRequest(address);
-        Channel regChannel = connection.createChannel();
-        channel.queueDeclare(regQueueName, false, false, false, null);
-        channel.basicPublish("", regQueueName, null, request.toString().getBytes());
-
-
-
-        return null;
-    }
-
-    @Override
     public boolean setupQueue(String name) {
         return false;
     }
 
     @Override
-    public boolean send(Message message) {
+    public boolean send(String message, String queueName) {
         return false;
     }
 

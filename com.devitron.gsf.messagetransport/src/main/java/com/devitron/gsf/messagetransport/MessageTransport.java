@@ -30,25 +30,7 @@ public interface MessageTransport {
      */
     public boolean setupQueue(String name);
 
-    /**
-     * Sends message
-     *
-     * @param message message to send
-     * @return if send was successful or not
-     */
-    public boolean send(Message message);
-
-
-    /**
-     * Sends a message to the queue queueName instead of the
-     * default queue that was configured with setupQueue
-     *
-     * @param message message to send
-     * @param queueName name of alternative queue
-     * @return if send was successful or not
-     */
-    public boolean send(Message message, String queueName);
-
+    
     /**
      * Sends message, message represented as a string
      *

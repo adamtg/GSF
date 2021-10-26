@@ -6,6 +6,9 @@ import com.devitron.gsf.common.message.Message;
 import com.devitron.gsf.messagetransport.MessageTransport;
 import com.devitron.gsf.messagetransport.MessageTransportFactory;
 import com.devitron.gsf.service.exceptions.MessageReplyTimeoutException;
+import com.devitron.gsf.utilities.Json;
+import com.devitron.gsf.utilities.Utilities;
+import com.devitron.gsf.utilities.exceptions.UtilitiesJsonParseException;
 
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
@@ -24,7 +27,7 @@ public abstract class Service {
     /**
      * Sets up the connection to the message broker, including
      * resgistering with the MessageRouter
-     * 
+     *
      * @throws IOException
      * @throws TimeoutException
      */
@@ -41,7 +44,6 @@ public abstract class Service {
 
         }
 
-        mt.setupQueue(queueName);
 
     }
 
@@ -49,6 +51,32 @@ public abstract class Service {
 
         boolean shutdown = false;
 
+        com.devitron.gsf.messagerouter.messages.Messages.RegisterServiceRequest regRequest =
+                new com.devitron.gsf.messagerouter.messages.Messages.RegisterServiceRequest(getAddress());
+
+        regRequest.shutdownOnDup = config.getGlobal().getShutdownOnDup();
+        regRequest.shutdownOnUnique = config.getGlobal().getShutdownOnUnique();
+        regRequest.randomeString = Utilities.generateRandomString(5);
+
+        Address serviceAddress = getAddress();
+        queueName = serviceAddress.getName() + "_" + serviceAddress.getVersion() + "_" + regRequest.randomeString;
+
+        mt.setupQueue(queueName);
+
+        try {
+
+            String jsonReply = send(regRequest, 0);
+
+            com.devitron.gsf.messagerouter.messages.Messages.RegisterServiceReply regReply =
+                    (com.devitron.gsf.messagerouter.messages.Messages.RegisterServiceReply) Json.jsonToObject(jsonReply, com.devitron.gsf.messagerouter.messages.Messages.RegisterServiceReply.class
+                    );
+
+            shutdown = regReply.shutdown;
+
+        } catch (UtilitiesJsonParseException | MessageReplyTimeoutException e) {
+            e.printStackTrace();
+            shutdown = false;
+        }
 
         return shutdown;
     }
@@ -89,10 +117,10 @@ public abstract class Service {
      * @param timeout How long to wait for reply in microseconds
      * @return Reply message
      */
-    public Message send(Message message, int timeout) throws MessageReplyTimeoutException {
+    public String send(Message message, int timeout) throws MessageReplyTimeoutException {
         message.getHeader().setSource(getAddress());
 
-        return new Message();
+        return null;
     }
 
     /**

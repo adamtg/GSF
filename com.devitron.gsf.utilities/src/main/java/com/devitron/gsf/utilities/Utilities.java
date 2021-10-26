@@ -44,4 +44,13 @@ public class Utilities {
         return uuid.toString();
     }
 
+
+    static public String generateRandomString(int size) {
+
+        String wholeString = generateUUID();
+
+        return wholeString.substring(0, size-1);
+
+    }
+
 }

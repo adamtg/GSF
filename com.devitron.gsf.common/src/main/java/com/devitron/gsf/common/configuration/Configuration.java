@@ -196,6 +196,9 @@ public class Configuration {
 
         private String registrationQueue;
 
+        private int shutdownOnDup;
+        private int shutdownOnUnique;
+
 
         public String getMessageBrokerAddress() {
             return messageBrokerAddress;
@@ -236,6 +239,23 @@ public class Configuration {
         public void setRegistrationQueue(String registerationQueue) {
             this.registrationQueue = registerationQueue;
         }
+
+        public int getShutdownOnDup() {
+            return shutdownOnDup;
+        }
+
+        public void setShutdownOnDup(int shutdownOnDup) {
+            this.shutdownOnDup = shutdownOnDup;
+        }
+
+        public int getShutdownOnUnique() {
+            return shutdownOnUnique;
+        }
+
+        public void setShutdownOnUnique(int shutdownOnUnique) {
+            this.shutdownOnUnique = shutdownOnUnique;
+        }
+
     }
 
 }
