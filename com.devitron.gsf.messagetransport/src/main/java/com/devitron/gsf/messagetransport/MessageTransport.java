@@ -1,8 +1,8 @@
 package com.devitron.gsf.messagetransport;
 
-import com.devitron.gsf.common.message.Address;
-import com.devitron.gsf.common.message.Message;
-import com.devitron.gsf.messagetransport.exceptions.ReceiveTimeoutException;
+import com.devitron.gsf.messagetransport.exceptions.MessageTransportIOException;
+import com.devitron.gsf.messagetransport.exceptions.MessageTransportReceiveTimeoutException;
+import com.devitron.gsf.messagetransport.exceptions.MessageTransportTimeoutException;
 
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
@@ -19,7 +19,7 @@ public interface MessageTransport {
      * @param username (if applicable) username to connect to the message broker
      * @param password (if applicable) password to connect to the message broker
      */
-    public void init(String hostname, int port, String username, String password)  throws IOException, TimeoutException;
+    public void init(String hostname, int port, String username, String password)  throws MessageTransportIOException, MessageTransportTimeoutException;
 
     /**
      * Set queue name to name.  This is the name that is
@@ -65,7 +65,7 @@ public interface MessageTransport {
      * @param timeout timeout in milliseconds
      * @return message in string form
      */
-    public String receive(int timeout) throws ReceiveTimeoutException;
+    public String receive(int timeout) throws MessageTransportReceiveTimeoutException;
 
     /**
      * Shuts down queue

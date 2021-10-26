@@ -21,5 +21,15 @@ public class Json {
 
     }
 
+    public static String objectToJson(Object o) {
+
+        String json = null;
+
+        Gson gson = new Gson();
+        json = gson.toJson(o);
+
+        return json;
+    }
+
 
 }

@@ -1,13 +1,11 @@
 package com.devitron.gsf.messagetransport.rabbitmq;
 
-import com.devitron.gsf.common.message.Address;
-import com.devitron.gsf.common.message.Message;
-import com.devitron.gsf.messagerouter.messages.Messages;
 import com.devitron.gsf.messagetransport.MessageTransport;
-import com.devitron.gsf.messagetransport.exceptions.ReceiveTimeoutException;
+import com.devitron.gsf.messagetransport.exceptions.MessageTransportIOException;
+import com.devitron.gsf.messagetransport.exceptions.MessageTransportReceiveTimeoutException;
 
 
-
+import com.devitron.gsf.messagetransport.exceptions.MessageTransportTimeoutException;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
@@ -32,7 +30,7 @@ public class RabbitMQTransport implements MessageTransport {
     private Channel channel;
 
     @Override
-    public void init(String hostname, int port, String username, String password) throws IOException, TimeoutException {
+    public void init(String hostname, int port, String username, String password) throws  MessageTransportIOException, MessageTransportTimeoutException {
         this.hostname = hostname;
         this.port = port;
         this.username = username;
@@ -46,8 +44,10 @@ public class RabbitMQTransport implements MessageTransport {
             connection = factory.newConnection();
             channel = connection.createChannel();
 
-        } catch (IOException | TimeoutException e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            throw new MessageTransportIOException(e);
+        } catch  (TimeoutException e) {
+            throw new MessageTransportTimeoutException(e);
         }
 
     }
@@ -73,7 +73,7 @@ public class RabbitMQTransport implements MessageTransport {
     }
 
     @Override
-    public String receive(int timeout) throws ReceiveTimeoutException {
+    public String receive(int timeout) throws MessageTransportReceiveTimeoutException {
         return null;
     }
 

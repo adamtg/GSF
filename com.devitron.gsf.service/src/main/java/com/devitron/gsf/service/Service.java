@@ -5,6 +5,8 @@ import com.devitron.gsf.common.message.Address;
 import com.devitron.gsf.common.message.Message;
 import com.devitron.gsf.messagetransport.MessageTransport;
 import com.devitron.gsf.messagetransport.MessageTransportFactory;
+import com.devitron.gsf.messagetransport.exceptions.MessageTransportIOException;
+import com.devitron.gsf.messagetransport.exceptions.MessageTransportTimeoutException;
 import com.devitron.gsf.service.exceptions.MessageReplyTimeoutException;
 import com.devitron.gsf.utilities.Json;
 import com.devitron.gsf.utilities.Utilities;
@@ -31,7 +33,7 @@ public abstract class Service {
      * @throws IOException
      * @throws TimeoutException
      */
-    public void setupMessageQueue() throws IOException, TimeoutException {
+    public void setupMessageQueue() throws MessageTransportIOException, MessageTransportTimeoutException {
 
         mt = MessageTransportFactory.getMessageTransport();
         mt.init(config.getGlobal().getMessageBrokerAddress(), config.getGlobal().getMessageBrokerPort(),
@@ -92,6 +94,7 @@ public abstract class Service {
      */
     public void send(Message message, Function<Message, Message> callback) {
         message.getHeader().setSource(getAddress());
+        String json = Json.objectToJson(message);
 
     }
 
@@ -102,7 +105,12 @@ public abstract class Service {
      */
     public void send(Message message) {
         message.getHeader().setSource(getAddress());
+        String json = Json.objectToJson(message);
 
+        boolean success = mt.send(json);
+        if (!success) {
+            // log a critical error
+        }
     }
 
     /**
