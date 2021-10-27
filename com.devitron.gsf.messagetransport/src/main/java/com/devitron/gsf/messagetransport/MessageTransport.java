@@ -40,18 +40,6 @@ public interface MessageTransport {
     public boolean send(String message);
 
     /**
-     * Sends a message, represented by a string, to the queue
-     * queueName instead of the default queue that was
-     * configured with setupQueue.
-     *
-     * @param message String representation of a message
-     * @param queueName name of alternative queue
-     * @return if send was successful or not
-     */
-    public boolean send(String message, String queueName);
-
-
-    /**
      * Gets message off of queue.  Blocks until a message is available.
      *
      * @return message in string form

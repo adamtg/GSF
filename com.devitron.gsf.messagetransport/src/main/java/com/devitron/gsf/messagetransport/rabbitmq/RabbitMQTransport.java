@@ -9,6 +9,7 @@ import com.devitron.gsf.messagetransport.exceptions.MessageTransportTimeoutExcep
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.GetResponse;
 
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
@@ -17,7 +18,6 @@ import java.util.concurrent.TimeoutException;
 public class RabbitMQTransport implements MessageTransport {
 
     private String queueName;
-    private String regQueueName;
 
     private String hostname;
     private int port;
@@ -43,7 +43,6 @@ public class RabbitMQTransport implements MessageTransport {
         try {
             connection = factory.newConnection();
             channel = connection.createChannel();
-
         } catch (IOException e) {
             throw new MessageTransportIOException(e);
         } catch  (TimeoutException e) {
@@ -54,31 +53,63 @@ public class RabbitMQTransport implements MessageTransport {
 
     @Override
     public boolean setupQueue(String name) {
-        return false;
-    }
 
-    @Override
-    public boolean send(String message, String queueName) {
+        queueName = name;
+        try {
+            channel.queueDeclare(queueName, false, false, false, null);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         return false;
     }
 
     @Override
     public boolean send(String message) {
+
+        try {
+            channel.basicPublish("", queueName, null, message.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         return false;
     }
 
     @Override
     public String receive() {
-        return null;
+
+        String reply = null;
+
+        try {
+            GetResponse gr =  channel.basicGet(queueName, true);
+            reply = new String(gr.getBody());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return reply;
     }
 
     @Override
     public String receive(int timeout) throws MessageTransportReceiveTimeoutException {
-        return null;
+
+        return receive();
     }
 
     @Override
     public void close() {
+
+        try {
+            channel.close();
+            connection.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (TimeoutException e) {
+            e.printStackTrace();
+        }
+
 
     }
 
