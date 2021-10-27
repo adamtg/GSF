@@ -2,6 +2,7 @@ package com.devitron.gsf.messagetransport.rabbitmq;
 
 import com.devitron.gsf.messagetransport.MessageTransport;
 import com.devitron.gsf.messagetransport.exceptions.MessageTransportIOException;
+import com.devitron.gsf.messagetransport.exceptions.MessageTransportInitException;
 import com.devitron.gsf.messagetransport.exceptions.MessageTransportReceiveTimeoutException;
 
 
@@ -30,7 +31,7 @@ public class RabbitMQTransport implements MessageTransport {
     private Channel channel;
 
     @Override
-    public void init(String hostname, int port, String username, String password) throws  MessageTransportIOException, MessageTransportTimeoutException {
+    public void init(String hostname, int port, String username, String password) throws MessageTransportInitException {
         this.hostname = hostname;
         this.port = port;
         this.username = username;
@@ -44,40 +45,40 @@ public class RabbitMQTransport implements MessageTransport {
             connection = factory.newConnection();
             channel = connection.createChannel();
         } catch (IOException e) {
-            throw new MessageTransportIOException(e);
+            throw new MessageTransportInitException(e);
         } catch  (TimeoutException e) {
-            throw new MessageTransportTimeoutException(e);
+            throw new MessageTransportInitException(e);
         }
 
     }
 
     @Override
-    public boolean setupQueue(String name) {
+    public boolean setupQueue(String name) throws MessageTransportIOException {
 
         queueName = name;
         try {
             channel.queueDeclare(queueName, false, false, false, null);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new MessageTransportIOException(e);
         }
 
         return false;
     }
 
     @Override
-    public boolean send(String message) {
+    public boolean send(String message) throws MessageTransportIOException {
 
         try {
             channel.basicPublish("", queueName, null, message.getBytes());
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new MessageTransportIOException(e);
         }
 
         return false;
     }
 
     @Override
-    public String receive() {
+    public String receive() throws MessageTransportIOException {
 
         String reply = null;
 
@@ -86,28 +87,28 @@ public class RabbitMQTransport implements MessageTransport {
             reply = new String(gr.getBody());
 
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new MessageTransportIOException(e);
         }
 
         return reply;
     }
 
     @Override
-    public String receive(int timeout) throws MessageTransportReceiveTimeoutException {
+    public String receive(int timeout) throws MessageTransportReceiveTimeoutException, MessageTransportIOException {
 
         return receive();
     }
 
     @Override
-    public void close() {
+    public void close() throws MessageTransportIOException, MessageTransportTimeoutException {
 
         try {
             channel.close();
             connection.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new MessageTransportIOException(e);
         } catch (TimeoutException e) {
-            e.printStackTrace();
+            throw new MessageTransportTimeoutException(e);
         }
 
 

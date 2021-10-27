@@ -1,6 +1,7 @@
 package com.devitron.gsf.messagetransport;
 
 import com.devitron.gsf.messagetransport.exceptions.MessageTransportIOException;
+import com.devitron.gsf.messagetransport.exceptions.MessageTransportInitException;
 import com.devitron.gsf.messagetransport.exceptions.MessageTransportReceiveTimeoutException;
 import com.devitron.gsf.messagetransport.exceptions.MessageTransportTimeoutException;
 
@@ -19,7 +20,7 @@ public interface MessageTransport {
      * @param username (if applicable) username to connect to the message broker
      * @param password (if applicable) password to connect to the message broker
      */
-    public void init(String hostname, int port, String username, String password)  throws MessageTransportIOException, MessageTransportTimeoutException;
+    public void init(String hostname, int port, String username, String password) throws  MessageTransportInitException;
 
     /**
      * Set queue name to name.  This is the name that is
@@ -28,7 +29,7 @@ public interface MessageTransport {
      * @param name name of the queue
      * @return boolean value if setup was successful
      */
-    public boolean setupQueue(String name);
+    public boolean setupQueue(String name) throws MessageTransportIOException;
 
     
     /**
@@ -37,14 +38,14 @@ public interface MessageTransport {
      * @param message String representation of a message
      * @return if send was successful or not
      */
-    public boolean send(String message);
+    public boolean send(String message) throws MessageTransportIOException;
 
     /**
      * Gets message off of queue.  Blocks until a message is available.
      *
      * @return message in string form
      */
-    public String receive();
+    public String receive() throws MessageTransportIOException;
 
     /**
      * Gets message of off queue.  Blocks until a message is available or
@@ -53,11 +54,11 @@ public interface MessageTransport {
      * @param timeout timeout in milliseconds
      * @return message in string form
      */
-    public String receive(int timeout) throws MessageTransportReceiveTimeoutException;
+    public String receive(int timeout) throws MessageTransportReceiveTimeoutException, MessageTransportIOException;
 
     /**
      * Shuts down queue
      */
-    public void close();
+    public void close() throws MessageTransportIOException, MessageTransportTimeoutException;
 
 }

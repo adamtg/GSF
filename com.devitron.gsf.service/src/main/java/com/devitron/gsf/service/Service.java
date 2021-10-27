@@ -6,14 +6,14 @@ import com.devitron.gsf.common.message.Message;
 import com.devitron.gsf.messagetransport.MessageTransport;
 import com.devitron.gsf.messagetransport.MessageTransportFactory;
 import com.devitron.gsf.messagetransport.exceptions.MessageTransportIOException;
+import com.devitron.gsf.messagetransport.exceptions.MessageTransportInitException;
 import com.devitron.gsf.messagetransport.exceptions.MessageTransportTimeoutException;
 import com.devitron.gsf.service.exceptions.ServiceMessageReplyTimeoutException;
+import com.devitron.gsf.service.exceptions.serviceregistrationfailureException;
 import com.devitron.gsf.utilities.Json;
 import com.devitron.gsf.utilities.Utilities;
 import com.devitron.gsf.utilities.exceptions.UtilitiesJsonParseException;
 
-import java.io.IOException;
-import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 
 public abstract class Service {
@@ -38,20 +38,16 @@ public abstract class Service {
      * @throws UtilitiesJsonParseException
      * @throws ServiceMessageReplyTimeoutException
      */
-    public boolean setupMessaging() throws MessageTransportIOException, MessageTransportTimeoutException, UtilitiesJsonParseException, ServiceMessageReplyTimeoutException {
+    public boolean setupMessaging() throws serviceregistrationfailureException, MessageTransportInitException {
 
         mt = MessageTransportFactory.getMessageTransport();
         mt.init(config.getGlobal().getMessageBrokerAddress(), config.getGlobal().getMessageBrokerPort(),
                 config.getGlobal().getMessageBrokerUsername(), config.getGlobal().getMessageBrokerPassword());
 
         boolean shutdown = false;
-        try {
-            shutdown = register();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            // log critical error stating registration timed out
-            shutdown = true;
-        }
+
+        shutdown = register();
+
 
         if (shutdown) {
             shutdownMessageBrokerConnection();
@@ -67,30 +63,33 @@ public abstract class Service {
      * @throws UtilitiesJsonParseException
      * @throws ServiceMessageReplyTimeoutException
      */
-    private boolean register() throws UtilitiesJsonParseException, ServiceMessageReplyTimeoutException, InterruptedException {
+    private boolean register() throws serviceregistrationfailureException {
 
         boolean shutdown = false;
 
-        com.devitron.gsf.messagerouter.messages.Messages.RegisterServiceRequest regRequest =
-                new com.devitron.gsf.messagerouter.messages.Messages.RegisterServiceRequest(getAddress());
+        try {
+            com.devitron.gsf.messagerouter.messages.Messages.RegisterServiceRequest regRequest =
+                    new com.devitron.gsf.messagerouter.messages.Messages.RegisterServiceRequest(getAddress());
 
-        regRequest.shutdownOnDup = config.getGlobal().getShutdownOnDup();
-        regRequest.shutdownOnUnique = config.getGlobal().getShutdownOnUnique();
-        regRequest.randomeString = Utilities.generateRandomString(5);
+            regRequest.shutdownOnDup = config.getGlobal().getShutdownOnDup();
+            regRequest.shutdownOnUnique = config.getGlobal().getShutdownOnUnique();
+            regRequest.randomeString = Utilities.generateRandomString(5);
 
-        Address serviceAddress = getAddress();
-        queueName = serviceAddress.getName() + "_" + serviceAddress.getVersion() + "_" + regRequest.randomeString;
+            Address serviceAddress = getAddress();
+            queueName = serviceAddress.getName() + "_" + serviceAddress.getVersion() + "_" + regRequest.randomeString;
 
-        mt.setupQueue(queueName);
+            mt.setupQueue(queueName);
 
-        String jsonReply = send(regRequest, -1);
+            String jsonReply = send(regRequest, -1);
 
-        com.devitron.gsf.messagerouter.messages.Messages.RegisterServiceReply regReply =
-                (com.devitron.gsf.messagerouter.messages.Messages.RegisterServiceReply) Json.jsonToObject(jsonReply, com.devitron.gsf.messagerouter.messages.Messages.RegisterServiceReply.class
-                );
+            com.devitron.gsf.messagerouter.messages.Messages.RegisterServiceReply regReply =
+                    (com.devitron.gsf.messagerouter.messages.Messages.RegisterServiceReply) Json.jsonToObject(jsonReply, com.devitron.gsf.messagerouter.messages.Messages.RegisterServiceReply.class
+                    );
 
-        shutdown = regReply.shutdown;
-
+            shutdown = regReply.shutdown;
+        } catch (Exception e) {
+            throw new serviceregistrationfailureException(e);
+        }
 
         return shutdown;
     }
@@ -117,7 +116,7 @@ public abstract class Service {
      *
      * @param message Message to be sent
      */
-    public boolean send(Message message) {
+    public boolean send(Message message) throws MessageTransportIOException {
         message.getHeader().setSource(getAddress());
         String json = Json.objectToJson(message);
 
@@ -143,7 +142,7 @@ public abstract class Service {
      * @throws ServiceMessageReplyTimeoutException
      * @throws InterruptedException
      */
-    public String send(Message message, int timeout) throws ServiceMessageReplyTimeoutException, InterruptedException {
+    public String send(Message message, int timeout) throws ServiceMessageReplyTimeoutException, MessageTransportIOException, InterruptedException {
         message.getHeader().setSource(getAddress());
         message.getHeader().setSync(true);
 
