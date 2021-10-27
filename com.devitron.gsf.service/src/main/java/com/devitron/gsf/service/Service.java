@@ -24,6 +24,7 @@ public abstract class Service {
     private String queueName = null;
 
     abstract public Address getAddress();
+
     abstract public String getServiceName();
 
 
@@ -43,7 +44,14 @@ public abstract class Service {
         mt.init(config.getGlobal().getMessageBrokerAddress(), config.getGlobal().getMessageBrokerPort(),
                 config.getGlobal().getMessageBrokerUsername(), config.getGlobal().getMessageBrokerPassword());
 
-        boolean shutdown = register();
+        boolean shutdown = false;
+        try {
+            shutdown = register();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            // log critical error stating registration timed out
+            shutdown = true;
+        }
 
         if (shutdown) {
             shutdownMessageBrokerConnection();
@@ -59,7 +67,7 @@ public abstract class Service {
      * @throws UtilitiesJsonParseException
      * @throws ServiceMessageReplyTimeoutException
      */
-    private boolean register() throws UtilitiesJsonParseException, ServiceMessageReplyTimeoutException {
+    private boolean register() throws UtilitiesJsonParseException, ServiceMessageReplyTimeoutException, InterruptedException {
 
         boolean shutdown = false;
 
@@ -75,15 +83,13 @@ public abstract class Service {
 
         mt.setupQueue(queueName);
 
+        String jsonReply = send(regRequest, -1);
 
+        com.devitron.gsf.messagerouter.messages.Messages.RegisterServiceReply regReply =
+                (com.devitron.gsf.messagerouter.messages.Messages.RegisterServiceReply) Json.jsonToObject(jsonReply, com.devitron.gsf.messagerouter.messages.Messages.RegisterServiceReply.class
+                );
 
-            String jsonReply = send(regRequest, 0);
-
-            com.devitron.gsf.messagerouter.messages.Messages.RegisterServiceReply regReply =
-                    (com.devitron.gsf.messagerouter.messages.Messages.RegisterServiceReply) Json.jsonToObject(jsonReply, com.devitron.gsf.messagerouter.messages.Messages.RegisterServiceReply.class
-                    );
-
-            shutdown = regReply.shutdown;
+        shutdown = regReply.shutdown;
 
 
         return shutdown;
@@ -95,7 +101,7 @@ public abstract class Service {
      * handled by the callback.  If callback is NULL, the message
      * will be sent, and the reply will be silently tossed.
      *
-     * @param message Message to be sent
+     * @param message  Message to be sent
      * @param callback Function to handle message reply
      */
     public void send(Message message, Function<Message, Message> callback) {
@@ -111,7 +117,7 @@ public abstract class Service {
      *
      * @param message Message to be sent
      */
-    public void send(Message message) {
+    public boolean send(Message message) {
         message.getHeader().setSource(getAddress());
         String json = Json.objectToJson(message);
 
@@ -119,23 +125,35 @@ public abstract class Service {
         if (!success) {
             // log a critical error
         }
+
+        return success;
     }
 
     /**
      * Sends out a message synchronously.  If a reply
      * is net received with timeout microseconds, an
      * exception is thrown.
-     *
-     * A timeout of 0 means to wait indefinitely for
+     * <p>
+     * A timeout of -1 means to wait indefinitely for
      * the reply
      *
      * @param message Message to be sent
      * @param timeout How long to wait for reply in microseconds
      * @return Reply message
+     * @throws ServiceMessageReplyTimeoutException
+     * @throws InterruptedException
      */
-    public String send(Message message, int timeout) throws ServiceMessageReplyTimeoutException {
+    public String send(Message message, int timeout) throws ServiceMessageReplyTimeoutException, InterruptedException {
         message.getHeader().setSource(getAddress());
         message.getHeader().setSync(true);
+
+
+        boolean success = send(message);
+        if (success) {
+            SynchronousMessageControl smt = SynchronousMessageControl.getSynchronousMessageControl();
+            smt.waitForMessage(message, -1);
+        }
+
 
         return null;
     }
@@ -159,7 +177,6 @@ public abstract class Service {
         // close connection to messaging queue
 
     }
-
 
 
 }
