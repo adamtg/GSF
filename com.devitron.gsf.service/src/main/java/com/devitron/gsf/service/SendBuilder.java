@@ -1,12 +1,15 @@
+package com.devitron.gsf.service;
+
 import com.devitron.gsf.common.message.Message;
 
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class SendBuilder {
 
     private Message message = null;
     boolean isSync = false;
-    Function<Message, Message> callback = null;
+    Consumer<String> callback = null;
 
 
     public SendBuilder(Message message) {
@@ -19,7 +22,7 @@ public class SendBuilder {
         return this;
     }
 
-    public SendBuilder withCallback(Function<Message, Message> callback) {
+    public SendBuilder withCallback(Consumer<String> callback) {
         this.callback = callback;
         return this;
     }

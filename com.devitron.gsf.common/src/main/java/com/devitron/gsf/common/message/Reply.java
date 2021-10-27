@@ -21,6 +21,9 @@ public class Reply extends Message {
         header.setDestination(new Address(message.getHeader().getSource().getName(), message.getHeader().getSource().getVersion()));
         header.setUuid(message.getHeader().getUuid());
         header.setComment(message.getHeader().getComment());
+        header.setCallback(message.getHeader().isCallback());
+        header.setSync(message.getHeader().isSync());
+        header.setFunction(message.getHeader().getFunction());
     }
 
 

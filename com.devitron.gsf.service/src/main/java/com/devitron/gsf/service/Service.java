@@ -9,12 +9,12 @@ import com.devitron.gsf.messagetransport.exceptions.MessageTransportIOException;
 import com.devitron.gsf.messagetransport.exceptions.MessageTransportInitException;
 import com.devitron.gsf.messagetransport.exceptions.MessageTransportTimeoutException;
 import com.devitron.gsf.service.exceptions.ServiceMessageReplyTimeoutException;
-import com.devitron.gsf.service.exceptions.serviceregistrationfailureException;
+import com.devitron.gsf.service.exceptions.ServiceRegistrationFailureException;
 import com.devitron.gsf.utilities.Json;
 import com.devitron.gsf.utilities.Utilities;
 import com.devitron.gsf.utilities.exceptions.UtilitiesJsonParseException;
 
-import java.util.function.Function;
+import java.util.function.Consumer;
 
 public abstract class Service {
 
@@ -38,7 +38,7 @@ public abstract class Service {
      * @throws UtilitiesJsonParseException
      * @throws ServiceMessageReplyTimeoutException
      */
-    public boolean setupMessaging() throws serviceregistrationfailureException, MessageTransportInitException {
+    public boolean setupMessaging() throws ServiceRegistrationFailureException, MessageTransportInitException {
 
         mt = MessageTransportFactory.getMessageTransport();
         mt.init(config.getGlobal().getMessageBrokerAddress(), config.getGlobal().getMessageBrokerPort(),
@@ -63,7 +63,7 @@ public abstract class Service {
      * @throws UtilitiesJsonParseException
      * @throws ServiceMessageReplyTimeoutException
      */
-    private boolean register() throws serviceregistrationfailureException {
+    private boolean register() throws ServiceRegistrationFailureException {
 
         boolean shutdown = false;
 
@@ -73,10 +73,10 @@ public abstract class Service {
 
             regRequest.shutdownOnDup = config.getGlobal().getShutdownOnDup();
             regRequest.shutdownOnUnique = config.getGlobal().getShutdownOnUnique();
-            regRequest.randomeString = Utilities.generateRandomString(5);
+            regRequest.randomString = Utilities.generateRandomString(5);
 
             Address serviceAddress = getAddress();
-            queueName = serviceAddress.getName() + "_" + serviceAddress.getVersion() + "_" + regRequest.randomeString;
+            queueName = serviceAddress.getName() + "_" + serviceAddress.getVersion() + "_" + regRequest.randomString;
 
             mt.setupQueue(queueName);
 
@@ -88,7 +88,7 @@ public abstract class Service {
 
             shutdown = regReply.shutdown;
         } catch (Exception e) {
-            throw new serviceregistrationfailureException(e);
+            throw new ServiceRegistrationFailureException(e);
         }
 
         return shutdown;
@@ -103,11 +103,13 @@ public abstract class Service {
      * @param message  Message to be sent
      * @param callback Function to handle message reply
      */
-    public void send(Message message, Function<Message, Message> callback) {
+    public void send(Message message, Consumer<String> callback) throws MessageTransportIOException {
         message.getHeader().setSource(getAddress());
         message.getHeader().setCallback(true);
 
-        String json = Json.objectToJson(message);
+
+
+        send(message);
 
     }
 

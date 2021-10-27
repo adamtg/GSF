@@ -17,9 +17,10 @@ public class Messages {
 
         public RegisterServiceRequest(Address destination) {
             super(destination);
+            getHeader().setFunction("RegisterService");
         }
 
-        public String randomeString;
+        public String randomString;
         public Integer shutdownOnDup;
         public Integer shutdownOnUnique;
 
