@@ -137,8 +137,8 @@ public class Configuration {
         }
 
 
-        if (serviceGlobal.getRegistrationQueue() == null) {
-            serviceGlobal.setRegistrationQueue(globalGlobal.getRegistrationQueue());
+        if (serviceGlobal.getMessageQueue() == null) {
+            serviceGlobal.setMessageQueue(globalGlobal.getMessageQueue());
         }
 
 
@@ -194,7 +194,7 @@ public class Configuration {
         private String messageBrokerUsername;
         private String messageBrokerPassword;
 
-        private String registrationQueue;
+        private String messageQueue;
 
         private int shutdownOnDup;
         private int shutdownOnUnique;
@@ -232,12 +232,12 @@ public class Configuration {
             this.messageBrokerPassword = messageBrokerPassword;
         }
 
-        public String getRegistrationQueue() {
-            return registrationQueue;
+        public String getMessageQueue() {
+            return messageQueue;
         }
 
-        public void setRegistrationQueue(String registerationQueue) {
-            this.registrationQueue = registerationQueue;
+        public void setMessageQueue(String messageQueue) {
+            this.messageQueue = messageQueue;
         }
 
         public int getShutdownOnDup() {
