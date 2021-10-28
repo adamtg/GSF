@@ -36,10 +36,8 @@ public abstract class Service {
      * registering with the MessageRouter
      *
      * @return if service should shutdown
-     * @throws MessageTransportIOException
-     * @throws MessageTransportTimeoutException
-     * @throws UtilitiesJsonParseException
-     * @throws ServiceMessageReplyTimeoutException
+     * @throws ServiceRegistrationFailureException
+     * @throws MessageTransportInitException
      */
     public boolean setupMessaging() throws ServiceRegistrationFailureException, MessageTransportInitException {
 
@@ -63,8 +61,7 @@ public abstract class Service {
      * Registers service with MessageRouter
      *
      * @return if service should shutdown
-     * @throws UtilitiesJsonParseException
-     * @throws ServiceMessageReplyTimeoutException
+     * @throws ServiceRegistrationFailureException
      */
     private boolean register() throws ServiceRegistrationFailureException {
 
@@ -83,11 +80,8 @@ public abstract class Service {
 
             mt.setupQueue(queueName);
 
-            String jsonReply = send(regRequest, -1);
-
             com.devitron.gsf.messagerouter.messages.Messages.RegisterServiceReply regReply =
-                    (com.devitron.gsf.messagerouter.messages.Messages.RegisterServiceReply) Json.jsonToObject(jsonReply, com.devitron.gsf.messagerouter.messages.Messages.RegisterServiceReply.class
-                    );
+                    (com.devitron.gsf.messagerouter.messages.Messages.RegisterServiceReply)send(regRequest, -1, com.devitron.gsf.messagerouter.messages.Messages.RegisterServiceReply.class) ;
 
             shutdown = regReply.shutdown;
         } catch (Exception e) {
@@ -98,6 +92,12 @@ public abstract class Service {
     }
 
 
+    void startMainLoop() {
+        HandleMessages hm = new HandleMessages(this);
+
+        hm.mainLoop();
+    }
+
     /**
      * Sends out a message asynchronously.  The message reply is
      * handled by the callback.  If callback is NULL, the message
@@ -105,21 +105,23 @@ public abstract class Service {
      *
      * @param message  Message to be sent
      * @param callback Function to handle message reply
+     * @param replyClass the class type of the reply message
+     * @throws MessageTransportIOException
      */
-    public void send(Message message, Consumer<String> callback) throws MessageTransportIOException {
-        message.getHeader().setSource(getAddress());
+    public void send(Message message, Consumer<Message> callback, Class replyClass) throws MessageTransportIOException {
         message.getHeader().setCallback(true);
 
-
+        CallbackMessageControl cmc = CallbackMessageControl.getCallbackMessageControl();
+        cmc.add(message, callback, replyClass);
 
         send(message);
-
     }
 
     /**
      * Sends out a message asynchronously.
      *
      * @param message Message to be sent
+     * @throws MessageTransportIOException
      */
     public boolean send(Message message) throws MessageTransportIOException {
         message.getHeader().setSource(getAddress());
@@ -143,34 +145,24 @@ public abstract class Service {
      *
      * @param message Message to be sent
      * @param timeout How long to wait for reply in microseconds
+     * @param replyClass class of the class type of the reply message
      * @return Reply message
      * @throws ServiceMessageReplyTimeoutException
+     * @throws MessageTransportIOException
      * @throws InterruptedException
      */
-    public String send(Message message, int timeout) throws ServiceMessageReplyTimeoutException, MessageTransportIOException, InterruptedException {
-        message.getHeader().setSource(getAddress());
+    public Message send(Message message, int timeout, Class replyClass) throws ServiceMessageReplyTimeoutException, MessageTransportIOException, InterruptedException {
         message.getHeader().setSync(true);
 
 
         boolean success = send(message);
         if (success) {
             SynchronousMessageControl smt = SynchronousMessageControl.getSynchronousMessageControl();
-            smt.waitForMessage(message, -1);
+            smt.waitForMessage(message, -1, replyClass);
         }
-
 
         return null;
     }
-
-    /**
-     * Retrieve a message from the service's queue
-     *
-     * @return message from the queue
-     */
-    public Message receiveMessage() {
-        return new Message();
-    }
-
 
     /**
      * Removes queue and shutdown message broker connection
@@ -182,7 +174,12 @@ public abstract class Service {
 
     }
 
-
+    /**
+     * Given a class name, it will add in all the methods
+     * that are annotated with the RPCMethod annotation
+     *
+     * @param className class with methods that have the RPCMethod annotations
+     */
     public void mapFunctionsToMethods(Class className) {
 
         Method[] methods = className.getMethods();
