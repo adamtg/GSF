@@ -9,7 +9,6 @@ import com.devitron.gsf.utilities.exceptions.UtilitiesJsonParseException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.function.Function;
 
 public class HandleMessages {
 
@@ -61,7 +60,7 @@ public class HandleMessages {
             Class firstArg = method.getParameterTypes()[0];
 
             Message request = (Message)Json.jsonToObject(json, firstArg);
-            Message reply = (Message)method.invoke(json);
+            Message reply = (Message)method.invoke(request);
 
             service.send(reply);
 
