@@ -25,14 +25,15 @@ public class SynchronousMessageControl {
     }
 
 
-    public String waitForMessage(Message message, long timeout) throws InterruptedException, ServiceMessageReplyTimeoutException {
+    public Message waitForMessage(Message message, long timeout, Class replyMessageClass) throws InterruptedException, ServiceMessageReplyTimeoutException {
 
         String Uuid = message.getHeader().getUuid();
-        String replyMessage = null;
+        Message replyMessage = null;
         boolean acquiredLock = true;
 
         SyncNode sn = new SyncNode();
         sn.lock.lock();
+        sn.replyMessageClass = replyMessageClass;
 
         syncMap.put(Uuid, sn);
 
@@ -54,23 +55,28 @@ public class SynchronousMessageControl {
         return replyMessage;
     }
 
-    public void unlockMessage(String jsonMessage) {
+    public void unlockMessage(Message message, String jsonMessage) {
 
-        String uuid = null;
-
-        Message message = null;
         try {
             message = (Message) Json.jsonToObject(jsonMessage, Message.class);
-            uuid = message.getHeader().getUuid();
 
         } catch (UtilitiesJsonParseException e) {
             e.printStackTrace();
             return;
         }
 
-        if (syncMap.containsKey(uuid)) {
-            SyncNode sn = syncMap.get(uuid);
-            sn.message = jsonMessage;
+        if (syncMap.containsKey(message.getHeader().getUuid())) {
+            SyncNode sn = syncMap.get(message.getHeader().getUuid());
+
+            Message m = null;
+            try {
+                m = (Message)Json.jsonToObject(jsonMessage, sn.replyMessageClass);
+            } catch (UtilitiesJsonParseException e) {
+                e.printStackTrace();
+            }
+
+
+            sn.message = m;
             sn.lock.unlock();
         }
 
@@ -80,7 +86,8 @@ public class SynchronousMessageControl {
 
     private class SyncNode {
         Lock lock = new ReentrantLock();
-        String message = null;
+        Message message = null;
+        Class replyMessageClass;
     }
 
 

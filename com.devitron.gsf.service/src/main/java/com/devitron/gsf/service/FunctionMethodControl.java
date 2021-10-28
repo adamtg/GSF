@@ -46,6 +46,8 @@ public class FunctionMethodControl {
 
     public class MethodNode {
         private Method method;
+        private Class firstArgClass;
+        private Class returnTypeClass;
     }
 
 }

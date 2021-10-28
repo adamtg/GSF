@@ -6,6 +6,10 @@ import java.util.UUID;
 
 public class Message {
 
+    static public final int REQUEST = 1;
+    static public final int REPLY = 2;
+
+
     Header header = new Header();
 
     public Message(Address source, Address destination) {

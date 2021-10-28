@@ -2,6 +2,8 @@ package com.devitron.gsf.common.message;
 
 public class Header {
 
+    private int type = 0;
+
     private Address source;
     private Address destination;
 
@@ -15,6 +17,14 @@ public class Header {
 
     private boolean sync = false;
     private boolean callback = false;
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
 
     public Address getSource() {
         return source;
