@@ -8,12 +8,15 @@ import com.devitron.gsf.messagetransport.MessageTransportFactory;
 import com.devitron.gsf.messagetransport.exceptions.MessageTransportIOException;
 import com.devitron.gsf.messagetransport.exceptions.MessageTransportInitException;
 import com.devitron.gsf.messagetransport.exceptions.MessageTransportTimeoutException;
+import com.devitron.gsf.service.annotations.RPCMethod;
 import com.devitron.gsf.service.exceptions.ServiceMessageReplyTimeoutException;
 import com.devitron.gsf.service.exceptions.ServiceRegistrationFailureException;
 import com.devitron.gsf.utilities.Json;
 import com.devitron.gsf.utilities.Utilities;
 import com.devitron.gsf.utilities.exceptions.UtilitiesJsonParseException;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.function.Consumer;
 
 public abstract class Service {
@@ -179,5 +182,31 @@ public abstract class Service {
 
     }
 
+
+    public void mapFunctionsToMethods(Class className) {
+
+        Method[] methods = className.getMethods();
+        String functionName = null;
+        FunctionMethodControl fmc = FunctionMethodControl.getFunctionMethodControl();
+
+        for (Method method : methods) {
+
+            Annotation[] annotations = method.getAnnotations();
+
+            for (Annotation a : annotations) {
+                if (a instanceof RPCMethod) {
+                    RPCMethod rm = (RPCMethod) a;
+                    if (rm.functionName().isEmpty()) {
+                        functionName = method.getName();
+                    } else {
+                        functionName = rm.functionName();
+                    }
+                    fmc.putMethod(functionName, method);
+                }
+
+            }
+
+        }
+    }
 
 }
