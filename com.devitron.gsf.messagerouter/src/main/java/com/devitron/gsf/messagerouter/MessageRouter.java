@@ -85,7 +85,7 @@ public class MessageRouter {
                 if (message.getHeader().equals(MESSAGE_ROUTER_SERVICE_NAME)) {
 
                     sendMessage = serviceMessage(message, json);
-                    sendMessageJson = Json.objectToJson(reply);
+                    sendMessageJson = Json.objectToJson(sendMessage);
 
                 } else {
                     sendMessage = message;
