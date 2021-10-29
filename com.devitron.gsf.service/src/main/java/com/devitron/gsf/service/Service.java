@@ -7,13 +7,11 @@ import com.devitron.gsf.messagetransport.MessageTransport;
 import com.devitron.gsf.messagetransport.MessageTransportFactory;
 import com.devitron.gsf.messagetransport.exceptions.MessageTransportIOException;
 import com.devitron.gsf.messagetransport.exceptions.MessageTransportInitException;
-import com.devitron.gsf.messagetransport.exceptions.MessageTransportTimeoutException;
 import com.devitron.gsf.service.annotations.RPCMethod;
 import com.devitron.gsf.service.exceptions.ServiceMessageReplyTimeoutException;
 import com.devitron.gsf.service.exceptions.ServiceRegistrationFailureException;
 import com.devitron.gsf.utilities.Json;
 import com.devitron.gsf.utilities.Utilities;
-import com.devitron.gsf.utilities.exceptions.UtilitiesJsonParseException;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -24,7 +22,6 @@ public abstract class Service {
     Configuration config;
     MessageTransport mt = null;
 
-    private String queueName = null;
 
     abstract public Address getAddress();
 
@@ -66,6 +63,8 @@ public abstract class Service {
     private boolean register() throws ServiceRegistrationFailureException {
 
         boolean shutdown = false;
+        String receiveQueueName;
+        String sendQueueName;
 
         try {
             com.devitron.gsf.messagerouter.messages.Messages.RegisterServiceRequest regRequest =
@@ -76,9 +75,12 @@ public abstract class Service {
             regRequest.randomString = Utilities.generateRandomString(5);
 
             Address serviceAddress = getAddress();
-            queueName = serviceAddress.getName() + "_" + serviceAddress.getVersion() + "_" + regRequest.randomString;
+            receiveQueueName = serviceAddress.getName() + "_" + serviceAddress.getVersion() + "_" + regRequest.randomString;
 
-            mt.setupQueue(queueName);
+            mt.setupQueue(receiveQueueName);
+            mt.setReceiveQueueDefault(receiveQueueName);
+
+            mt.setSendQueueDefault(config.getGlobal().getSendMessageQueue());
 
             com.devitron.gsf.messagerouter.messages.Messages.RegisterServiceReply regReply =
                     (com.devitron.gsf.messagerouter.messages.Messages.RegisterServiceReply)send(regRequest, -1, com.devitron.gsf.messagerouter.messages.Messages.RegisterServiceReply.class) ;

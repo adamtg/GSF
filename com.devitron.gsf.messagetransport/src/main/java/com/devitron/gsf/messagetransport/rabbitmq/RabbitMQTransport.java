@@ -18,7 +18,8 @@ import java.util.concurrent.TimeoutException;
 
 public class RabbitMQTransport implements MessageTransport {
 
-    private String queueName;
+    private String sendQueueName;
+    private String receiveQueueName;
 
     private String hostname;
     private int port;
@@ -53,28 +54,50 @@ public class RabbitMQTransport implements MessageTransport {
     }
 
     @Override
-    public boolean setupQueue(String name) throws MessageTransportIOException {
+    public boolean setupQueue(String queueName) throws MessageTransportIOException {
 
-        queueName = name;
+
         try {
             channel.queueDeclare(queueName, false, false, false, null);
         } catch (IOException e) {
             throw new MessageTransportIOException(e);
         }
 
-        return false;
+        return true;
     }
+
+    @Override
+    public void setSendQueueDefault(String queueName) {
+        this.sendQueueName = queueName;
+    }
+
+    @Override
+    public void setReceiveQueueDefault(String queueName) {
+        this.receiveQueueName = queueName;
+    }
+
+
 
     @Override
     public boolean send(String message) throws MessageTransportIOException {
 
         try {
-            channel.basicPublish("", queueName, null, message.getBytes());
+            channel.basicPublish("", sendQueueName, null, message.getBytes());
         } catch (IOException e) {
             throw new MessageTransportIOException(e);
         }
 
-        return false;
+        return true;
+    }
+
+    @Override
+    public boolean send(String message, String queueName) throws MessageTransportIOException {
+        try {
+            channel.basicPublish("", queueName, null, message.getBytes());
+        } catch (IOException e) {
+            throw new MessageTransportIOException(e);
+        }
+        return true;
     }
 
     @Override
@@ -83,7 +106,7 @@ public class RabbitMQTransport implements MessageTransport {
         String reply = null;
 
         try {
-            GetResponse gr =  channel.basicGet(queueName, true);
+            GetResponse gr =  channel.basicGet(receiveQueueName, true);
             reply = new String(gr.getBody());
 
         } catch (IOException e) {

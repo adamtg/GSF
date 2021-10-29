@@ -6,10 +6,18 @@ import com.devitron.gsf.messagerouter.exception.AddressNotRegisteredException;
 
 import java.util.HashMap;
 
-public class RegisteredServices {
+public class RegisteredServiceController {
 
     HashMap<Address, String> registered = new HashMap<>();
     HashMap<String, String> maxServiceVersion = new HashMap<>();
+    static private RegisteredServiceController rsc = new RegisteredServiceController();
+
+    private RegisteredServiceController() { }
+
+    static public RegisteredServiceController getRegisteredServiceController() {
+        return rsc;
+    }
+
 
     String addService(Address address) throws AddressAlreadyRegisteredException {
 
@@ -35,13 +43,31 @@ public class RegisteredServices {
 
     }
 
-    public void getQueueAddress(Address address)  throws AddressNotRegisteredException {
+    public String getQueueAddress(Address address)  throws AddressNotRegisteredException {
 
         if (!registered.containsKey(address)) {
             throw new AddressNotRegisteredException();
         }
 
-
+        return registered.get(address);
     }
 
+
+    public boolean doesAddressExist(Address address) {
+        return registered.containsKey(address);
+    }
+
+
+    public boolean doesServiceExist(String service) {
+        boolean exists = false;
+
+        for (Address address : registered.keySet()) {
+            if (address.getName().equals(service)) {
+                exists = true;
+                break;
+            }
+        }
+
+        return exists;
+    }
 }

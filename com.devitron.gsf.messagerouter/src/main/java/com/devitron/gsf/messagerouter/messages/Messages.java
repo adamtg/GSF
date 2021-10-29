@@ -34,6 +34,7 @@ public class Messages {
         }
 
         public Boolean shutdown;
+        public String queueName;
 
     }
 

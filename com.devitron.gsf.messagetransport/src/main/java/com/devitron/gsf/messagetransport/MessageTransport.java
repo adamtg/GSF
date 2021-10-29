@@ -29,16 +29,40 @@ public interface MessageTransport {
      * @param name name of the queue
      * @return boolean value if setup was successful
      */
-    public boolean setupQueue(String name) throws MessageTransportIOException;
+    public boolean setupQueue(String queueName) throws MessageTransportIOException;
 
-    
     /**
-     * Sends message, message represented as a string
+     * Setup default queue to send messages
+     * @param queueName name of queue
+     */
+    public void setSendQueueDefault(String queueName);
+
+    /**
+     * Setup default queue to receive messages
+     * @param queueName name of queue
+     */
+    public void setReceiveQueueDefault(String queueName);
+
+
+
+    /**
+     * Sends message to default queue
      *
      * @param message String representation of a message
      * @return if send was successful or not
      */
     public boolean send(String message) throws MessageTransportIOException;
+
+    /**
+     *  Sends mesasge to the queue queueName
+     *
+     * @param message String representation of a message
+     * @param queueName queue name
+     * @return
+     * @throws MessageTransportIOException
+     */
+    public boolean send(String message, String queueName) throws MessageTransportIOException;
+
 
     /**
      * Gets message off of queue.  Blocks until a message is available.
