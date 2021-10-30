@@ -1,6 +1,8 @@
 package com.devitron.gsf.messagerouter;
 
 import com.devitron.gsf.common.configuration.Configuration;
+import com.devitron.gsf.common.configuration.exceptions.ConfigFileNotFoundException;
+import com.devitron.gsf.common.configuration.exceptions.ConfigFileParseException;
 import com.devitron.gsf.common.message.Message;
 import com.devitron.gsf.messagerouter.exception.AddressNotRegisteredException;
 import com.devitron.gsf.messagerouter.register.Register;
@@ -11,12 +13,40 @@ import com.devitron.gsf.messagetransport.exceptions.MessageTransportIOException;
 import com.devitron.gsf.utilities.Json;
 import com.devitron.gsf.utilities.exceptions.UtilitiesJsonParseException;
 
+import java.io.ObjectInputFilter;
+
 public class MessageRouter {
 
     static final String MESSAGE_ROUTER_SERVICE_NAME = "MessageRouter";
+    static final String CONFIG_FILENAME = "routerConfig.conf";
+
     Configuration config;
     MessageTransport mt = MessageTransportFactory.getMessageTransport();
     RegisteredServiceController rsc = RegisteredServiceController.getRegisteredServiceController();
+
+
+    static void main(String[] argv) {
+
+        MessageRouter mr = new MessageRouter();
+
+        try {
+            mr.loadConfig();
+        } catch (ConfigFileNotFoundException | ConfigFileParseException e) {
+            e.printStackTrace();
+            // log
+            return;
+        }
+
+        mr.mainLoop();
+
+    }
+
+
+
+    public void loadConfig() throws ConfigFileNotFoundException, ConfigFileParseException {
+
+        config = Configuration.loadConfiguration(CONFIG_FILENAME, MessageRouterConfiguration.class);
+    }
 
     /**
      * Takes a message, parses the header and send it
