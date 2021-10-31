@@ -22,30 +22,28 @@ public class HandleMessages {
         boolean continueLoop = true;
         MessageTransport mt = MessageTransportFactory.getMessageTransport();
 
-        while (continueLoop) {
-            String json = null;
             try {
-                json = mt.receive();
+                mt.receive((json) -> {
+                            Message message = null;
+                            try {
+                                message = (Message) Json.jsonToObject(json, Message.class);
+                            } catch (UtilitiesJsonParseException e) {
+                                e.printStackTrace();
+                            }
+
+                            if (message.getHeader().getType() == Message.REQUEST) {
+                                handleRequest(message, json);
+                            } else if (message.getHeader().getType() == Message.REPLY) {
+                                handleReply(message, json);
+                            }
+                        }
+
+                        );
             } catch (MessageTransportIOException e) {
                 e.printStackTrace();
                 continueLoop = false;
-                continue;
             }
 
-            Message message;
-            try {
-                message = (Message) Json.jsonToObject(json, Message.class);
-            } catch (UtilitiesJsonParseException e) {
-                e.printStackTrace();
-                continue;
-            }
-
-            if (message.getHeader().getType() == Message.REQUEST) {
-                handleRequest(message, json);
-            } else if (message.getHeader().getType() == Message.REPLY) {
-                handleReply(message, json);
-            }
-        }
 
     }
 

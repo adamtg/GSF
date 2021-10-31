@@ -7,13 +7,12 @@ import com.devitron.gsf.messagetransport.exceptions.MessageTransportReceiveTimeo
 
 
 import com.devitron.gsf.messagetransport.exceptions.MessageTransportTimeoutException;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.GetResponse;
+import com.rabbitmq.client.*;
 
+import javax.security.auth.callback.Callback;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
 
 
 public class RabbitMQTransport implements MessageTransport {
@@ -41,6 +40,8 @@ public class RabbitMQTransport implements MessageTransport {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(hostname);
         factory.setPort(port);
+        factory.setUsername(username);
+        factory.setPassword(password);
 
         try {
             connection = factory.newConnection();
@@ -101,25 +102,23 @@ public class RabbitMQTransport implements MessageTransport {
     }
 
     @Override
-    public String receive() throws MessageTransportIOException {
+    public void receive(Consumer<String> callback) throws MessageTransportIOException {
+
+
+        DeliverCallback deliverCallback = (consumerTag, message) -> {
+            String m = new String(message.getBody());
+            callback.accept(m);
+        };
+
+
+
 
         String reply = null;
-
         try {
-            GetResponse gr =  channel.basicGet(receiveQueueName, true);
-            reply = new String(gr.getBody());
-
+            channel.basicConsume(receiveQueueName, true, deliverCallback, consumerTag -> {});
         } catch (IOException e) {
             throw new MessageTransportIOException(e);
         }
-
-        return reply;
-    }
-
-    @Override
-    public String receive(int timeout) throws MessageTransportReceiveTimeoutException, MessageTransportIOException {
-
-        return receive();
     }
 
     @Override

@@ -10,24 +10,31 @@ import com.devitron.gsf.messagerouter.register.RegisteredServiceController;
 import com.devitron.gsf.messagetransport.MessageTransport;
 import com.devitron.gsf.messagetransport.MessageTransportFactory;
 import com.devitron.gsf.messagetransport.exceptions.MessageTransportIOException;
+import com.devitron.gsf.messagetransport.exceptions.MessageTransportInitException;
 import com.devitron.gsf.utilities.Json;
 import com.devitron.gsf.utilities.exceptions.UtilitiesJsonParseException;
-
-import java.io.ObjectInputFilter;
 
 public class MessageRouter {
 
     static final String MESSAGE_ROUTER_SERVICE_NAME = "MessageRouter";
-    static final String CONFIG_FILENAME = "routerConfig.conf";
+    static final String CONFIG_FILENAME = "messageRouterConfig.conf";
 
     Configuration config;
-    MessageTransport mt = MessageTransportFactory.getMessageTransport();
-    RegisteredServiceController rsc = RegisteredServiceController.getRegisteredServiceController();
+    static MessageTransport mt = null;
+    static RegisteredServiceController rsc = null;
 
 
-    static void main(String[] argv) {
+    static public void main(String[] argv) {
+
+
+        System.out.println("------------------------------------");
+        System.out.println("Starting MessageRouter");
+        System.out.println("------------------------------------");
 
         MessageRouter mr = new MessageRouter();
+
+        mr.mt = MessageTransportFactory.getMessageTransport();
+        mr.rsc = RegisteredServiceController.getRegisteredServiceController();
 
         try {
             mr.loadConfig();
@@ -37,14 +44,33 @@ public class MessageRouter {
             return;
         }
 
+
+        System.out.println("address: " + mr.config.getGlobal().getMessageBrokerAddress());
+        System.out.println("port: " + mr.config.getGlobal().getMessageBrokerPort());
+        System.out.println("user: " + mr.config.getGlobal().getMessageBrokerUsername());
+        System.out.println("password: " + mr.config.getGlobal().getMessageBrokerPassword());
+        System.out.println("queue: " + mr.config.getGlobal().getSendMessageQueue());
+
+
+        try {
+            mr.mt.init(mr.config.getGlobal().getMessageBrokerAddress(), mr.config.getGlobal().getMessageBrokerPort(),
+                    mr.config.getGlobal().getMessageBrokerUsername(), mr.config.getGlobal().getMessageBrokerPassword());
+            mr.mt.setupQueue(mr.config.getGlobal().getSendMessageQueue());
+            mr.mt.setReceiveQueueDefault(mr.config.getGlobal().getSendMessageQueue());
+        } catch (MessageTransportIOException | MessageTransportInitException e) {
+            e.printStackTrace();
+            // log errror
+            return;
+        }
+
         mr.mainLoop();
 
     }
 
 
-
     public void loadConfig() throws ConfigFileNotFoundException, ConfigFileParseException {
 
+        System.out.println("Going to get config");
         config = Configuration.loadConfiguration(CONFIG_FILENAME, MessageRouterConfiguration.class);
     }
 
@@ -53,21 +79,20 @@ public class MessageRouter {
      * to the appropriate registered service
      *
      * @param message message to route to the proper service
-     * @param json String form of message
+     * @param json    String form of message
      */
-    public Message serviceMessage(Message message, String json) {
-            Message sendMessage = null;
+    static public Message serviceMessage(Message message, String json) {
+        Message sendMessage = null;
 
-            if (message.getHeader().getFunction().equals("RegisterService")) {
-                sendMessage = Register.registerService(json);
-            }
+        if (message.getHeader().getFunction().equals("RegisterService")) {
+            sendMessage = Register.registerService(json);
+        }
 
-           return message;
+        return sendMessage;
     }
 
 
-
-    private void sendMessage(Message message, String json) {
+    static private void sendMessage(Message message, String json) {
 
         String queueName = null;
         try {
@@ -87,50 +112,53 @@ public class MessageRouter {
 
 
     /**
-     *  Main loop
+     * Main loop
      */
     public void mainLoop() {
-        boolean continueLoop = true;
 
         try {
-            mt.setupQueue(config.getGlobal().getSendMessageQueue());
+            mt.receive(MessageRouter::receiveMessage);
+
         } catch (MessageTransportIOException e) {
             e.printStackTrace();
-            // log errror
-            return;
         }
 
 
-        while (continueLoop) {
-            String json = null;
-            Message message = null;
-            String sendMessageJson = null;
-            Message sendMessage = null;
+    }
 
-            try {
 
-                json = mt.receive();
-                message = (Message)Json.jsonToObject(json, Message.class);
+    static public void receiveMessage(String json) {
 
-                if (message.getHeader().equals(MESSAGE_ROUTER_SERVICE_NAME)) {
+        Message message;
+        String sendMessageJson = null;
+        Message sendMessage = null;
 
-                    sendMessage = serviceMessage(message, json);
-                    sendMessageJson = Json.objectToJson(sendMessage);
+        System.out.println("--------------------------------------");
+        System.out.println(json);
+        System.out.println("--------------------------------------");
 
-                } else {
-                    sendMessage = message;
-                    sendMessageJson = json;
-                }
+        try {
 
-                sendMessage(sendMessage, sendMessageJson);
+            message = (Message) Json.jsonToObject(json, Message.class);
 
-            } catch (MessageTransportIOException e) {
-                e.printStackTrace();
-            } catch (UtilitiesJsonParseException e) {
-                e.printStackTrace();
+            if (message.getHeader().equals(MESSAGE_ROUTER_SERVICE_NAME)) {
+
+                sendMessage = serviceMessage(message, json);
+                sendMessageJson = Json.objectToJson(sendMessage);
+
+            } else {
+                sendMessage = message;
+                sendMessageJson = json;
             }
 
+            sendMessage(sendMessage, sendMessageJson);
+
+
+        } catch (UtilitiesJsonParseException e) {
+            e.printStackTrace();
         }
+
+
     }
 
 

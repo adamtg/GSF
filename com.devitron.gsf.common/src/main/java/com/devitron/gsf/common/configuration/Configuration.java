@@ -74,6 +74,8 @@ public class Configuration {
 
             Path path = Paths.get(fullFilepath);
 
+            System.out.println("GSF_HOME: " + fullFilepath);
+
             if (Files.notExists(path)) {
 
                 fullFilepath = DEFAULT_GSF_HOMR + "/config/" + configname;
@@ -136,6 +138,14 @@ public class Configuration {
             serviceGlobal.setMessageBrokerPort(globalGlobal.getMessageBrokerPort());
         }
 
+        if (serviceGlobal.getMessageBrokerUsername() == null) {
+            serviceGlobal.setMessageBrokerUsername(globalGlobal.getMessageBrokerUsername());
+        }
+
+        if (serviceGlobal.getMessageBrokerPassword() == null) {
+            serviceGlobal.setMessageBrokerPassword(globalGlobal.getMessageBrokerPassword());
+        }
+
 
         if (serviceGlobal.getSendMessageQueue() == null) {
             serviceGlobal.setSendMessageQueue(globalGlobal.getSendMessageQueue());
@@ -163,6 +173,8 @@ public class Configuration {
         Global global = loadGlobal();
         String filename = null;
 
+        System.out.println("configFilename: " + configFilename);
+
         if (configFilename.startsWith("/")) {
             filename = configFilename;
         } else {
@@ -172,6 +184,7 @@ public class Configuration {
             Path path = Path.of(filename);
             rawJson = Files.readString(path);
         } catch (IOException e) {
+            e.printStackTrace();
             throw new ConfigFileNotFoundException(e);
         }
 
@@ -180,6 +193,13 @@ public class Configuration {
         } catch (UtilitiesJsonParseException e) {
             throw new ConfigFileParseException(e);
         }
+
+        if (config.getGlobal() == null) {
+            config.setGlobal(new Global());
+        }
+
+
+
 
         mergeGlobal(global, config.getGlobal());
 

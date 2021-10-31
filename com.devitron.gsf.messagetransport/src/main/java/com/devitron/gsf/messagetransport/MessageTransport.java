@@ -5,8 +5,10 @@ import com.devitron.gsf.messagetransport.exceptions.MessageTransportInitExceptio
 import com.devitron.gsf.messagetransport.exceptions.MessageTransportReceiveTimeoutException;
 import com.devitron.gsf.messagetransport.exceptions.MessageTransportTimeoutException;
 
+import javax.security.auth.callback.Callback;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
 
 public interface MessageTransport {
 
@@ -69,16 +71,26 @@ public interface MessageTransport {
      *
      * @return message in string form
      */
-    public String receive() throws MessageTransportIOException;
+    //  public String receive() throws MessageTransportIOException;
+
 
     /**
-     * Gets message of off queue.  Blocks until a message is available or
-     * for timeout milliseconds.
+     * Gets message off of queue.  Blocks until a message is available.
      *
-     * @param timeout timeout in milliseconds
      * @return message in string form
      */
-    public String receive(int timeout) throws MessageTransportReceiveTimeoutException, MessageTransportIOException;
+    public void receive(Consumer<String>  callback) throws MessageTransportIOException;
+
+
+
+        /**
+         * Gets message of off queue.  Blocks until a message is available or
+         * for timeout milliseconds.
+         *
+         * @param timeout timeout in milliseconds
+         * @return message in string form
+         */
+   // public String receive(int timeout) throws MessageTransportReceiveTimeoutException, MessageTransportIOException;
 
     /**
      * Shuts down queue
